@@ -67,7 +67,7 @@ function Alumnos({ token }) {
 
   return (
     <div className="alumnos-container">
-      <h2>Gestión de Alumnos</h2>
+      <h2>Alumnos</h2>
       {mensaje && (
         <p className={mensaje.includes("❌") || mensaje.includes("⚠️") ? "error" : "success"}>{mensaje}</p>
       )}
