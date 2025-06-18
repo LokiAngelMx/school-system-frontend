@@ -13,8 +13,8 @@ Este es el frontend de la aplicación escolar, creado con **React + Vite**. Perm
 ## 🚀 Instalación
 
 ```bash
-git clone https://github.com/LokiAngelMx/school-system-frontend frontend-school-vite
-cd frontend-school-vite
+git clone https://github.com/LokiAngelMx/school-system-frontend frontend-school-system
+cd frontend-school-system
 npm install
 npm run dev
 ```
