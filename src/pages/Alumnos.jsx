@@ -5,13 +5,14 @@ import {
   updateAlumno,
   deleteAlumno
 } from "../services/api";
+import "../styles/alumnos.css";
 
 function Alumnos({ token }) {
   const [alumnos, setAlumnos] = useState([]);
-  const [nuevo, setNuevo] = useState({ nombre: "", matricula: "", correo: "" });
+  const [form, setForm] = useState({ nombre: "", matricula: "", correo: "" });
+  const [mensaje, setMensaje] = useState("");
   const [modoEdicion, setModoEdicion] = useState(false);
   const [idEditar, setIdEditar] = useState(null);
-  const [mensaje, setMensaje] = useState("");
 
   const cargarAlumnos = async () => {
     const res = await getAlumnos(token);
@@ -19,8 +20,7 @@ function Alumnos({ token }) {
   };
 
   const guardarAlumno = async () => {
-    const { nombre, matricula, correo } = nuevo;
-
+    const { nombre, matricula, correo } = form;
     if (!nombre || !matricula || !correo) {
       setMensaje("⚠️ Todos los campos son obligatorios");
       setTimeout(() => setMensaje(""), 2000);
@@ -29,14 +29,13 @@ function Alumnos({ token }) {
 
     try {
       if (modoEdicion) {
-        await updateAlumno(idEditar, nuevo);
+        await updateAlumno(idEditar, form);
         setMensaje("✅ Alumno actualizado");
       } else {
-        await createAlumno(nuevo);
-        setMensaje("✅ Alumno guardado");
+        await createAlumno(form);
+        setMensaje("✅ Alumno registrado");
       }
-
-      setNuevo({ nombre: "", matricula: "", correo: "" });
+      setForm({ nombre: "", matricula: "", correo: "" });
       setModoEdicion(false);
       setIdEditar(null);
       cargarAlumnos();
@@ -50,15 +49,11 @@ function Alumnos({ token }) {
   const editarAlumno = (alumno) => {
     setModoEdicion(true);
     setIdEditar(alumno._id);
-    setNuevo({
-      nombre: alumno.nombre,
-      matricula: alumno.matricula,
-      correo: alumno.correo
-    });
+    setForm({ nombre: alumno.nombre, matricula: alumno.matricula, correo: alumno.correo });
   };
 
   const borrarAlumno = async (id) => {
-    if (confirm("¿Seguro que deseas eliminar este alumno?")) {
+    if (confirm("¿Eliminar este alumno?")) {
       await deleteAlumno(id);
       setMensaje("✅ Alumno eliminado");
       cargarAlumnos();
@@ -71,42 +66,47 @@ function Alumnos({ token }) {
   }, []);
 
   return (
-    <div>
-      <h2>Alumnos</h2>
-
+    <div className="alumnos-container">
+      <h2>Gestión de Alumnos</h2>
       {mensaje && (
-        <p style={{ color: mensaje.includes("⚠️") || mensaje.includes("❌") ? "red" : "green" }}>
-          {mensaje}
-        </p>
+        <p className={mensaje.includes("❌") || mensaje.includes("⚠️") ? "error" : "success"}>{mensaje}</p>
       )}
 
-      {alumnos.map((a) => (
-        <div key={a._id}>
-          {a.nombre} - {a.matricula}
-          <button onClick={() => editarAlumno(a)}>Editar</button>
-          <button onClick={() => borrarAlumno(a._id)}>Eliminar</button>
-        </div>
-      ))}
+      <div className="form-section">
+        <input
+          placeholder="Nombre"
+          value={form.nombre}
+          onChange={(e) => setForm({ ...form, nombre: e.target.value })}
+        />
+        <input
+          placeholder="Matrícula"
+          value={form.matricula}
+          onChange={(e) => setForm({ ...form, matricula: e.target.value })}
+        />
+        <input
+          placeholder="Correo"
+          value={form.correo}
+          onChange={(e) => setForm({ ...form, correo: e.target.value })}
+        />
+        <button onClick={guardarAlumno} className="guardar-btn">
+          {modoEdicion ? "Actualizar" : "Guardar"}
+        </button>
+      </div>
 
-      <h3>{modoEdicion ? "Editar alumno" : "Agregar alumno"}</h3>
-      <input
-        placeholder="Nombre"
-        value={nuevo.nombre}
-        onChange={(e) => setNuevo({ ...nuevo, nombre: e.target.value })}
-      />
-      <input
-        placeholder="Matrícula"
-        value={nuevo.matricula}
-        onChange={(e) => setNuevo({ ...nuevo, matricula: e.target.value })}
-      />
-      <input
-        placeholder="Correo"
-        value={nuevo.correo}
-        onChange={(e) => setNuevo({ ...nuevo, correo: e.target.value })}
-      />
-      <button onClick={guardarAlumno}>
-        {modoEdicion ? "Actualizar" : "Guardar"}
-      </button>
+      <div className="lista-alumnos">
+        {alumnos.map((a) => (
+          <div key={a._id} className="alumno-card">
+            <div>
+              <p><strong>{a.nombre}</strong> ({a.matricula})</p>
+              <p>{a.correo}</p>
+            </div>
+            <div>
+              <button className="editar-btn" onClick={() => editarAlumno(a)}>Editar</button>
+              <button className="eliminar-btn" onClick={() => borrarAlumno(a._id)}>Eliminar</button>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

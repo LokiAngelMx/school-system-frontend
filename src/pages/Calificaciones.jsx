@@ -7,6 +7,7 @@ import {
   updateCalificacion,
   deleteCalificacion
 } from "../services/api";
+import "../styles/calificaciones.css";
 
 function Calificaciones({ token }) {
   const [alumnos, setAlumnos] = useState([]);
@@ -81,56 +82,63 @@ function Calificaciones({ token }) {
   }, []);
 
   return (
-    <div>
+    <div className="calificaciones-container">
       <h2>Calificaciones</h2>
 
       {mensaje && (
-        <p style={{ color: mensaje.includes("⚠️") || mensaje.includes("❌") ? "red" : "green" }}>
+        <p className={mensaje.includes("❌") || mensaje.includes("⚠️") ? "error" : "success"}>
           {mensaje}
         </p>
       )}
 
-      <h3>{modoEdicion ? "Editar calificación" : "Registrar calificación"}</h3>
+      <div className="form-section">
+        <select
+          value={form.alumno}
+          onChange={(e) => setForm({ ...form, alumno: e.target.value })}
+        >
+          <option value="">Seleccione alumno</option>
+          {alumnos.map((a) => (
+            <option key={a._id} value={a._id}>{a.nombre}</option>
+          ))}
+        </select>
 
-      <select
-        value={form.alumno}
-        onChange={(e) => setForm({ ...form, alumno: e.target.value })}
-      >
-        <option value="">Seleccione alumno</option>
-        {alumnos.map((a) => (
-          <option key={a._id} value={a._id}>{a.nombre}</option>
+        <select
+          value={form.materia}
+          onChange={(e) => setForm({ ...form, materia: e.target.value })}
+        >
+          <option value="">Seleccione materia</option>
+          {materias.map((m) => (
+            <option key={m._id} value={m._id}>{m.nombre}</option>
+          ))}
+        </select>
+
+        <input
+          type="number"
+          placeholder="Calificación"
+          value={form.calificacion}
+          onChange={(e) => setForm({ ...form, calificacion: e.target.value })}
+        />
+
+        <button onClick={guardar}>
+          {modoEdicion ? "Actualizar" : "Guardar"}
+        </button>
+      </div>
+
+      <div className="lista-calificaciones">
+        {calificaciones.map((c) => (
+          <div key={c._id} className="calificacion-card">
+            <div>
+              <p>
+                <strong>{c.alumno?.nombre}</strong> - {c.materia?.nombre} = {c.calificacion}
+              </p>
+            </div>
+            <div>
+              <button onClick={() => editar(c)}>Editar</button>
+              <button onClick={() => borrar(c._id)}>Eliminar</button>
+            </div>
+          </div>
         ))}
-      </select>
-
-      <select
-        value={form.materia}
-        onChange={(e) => setForm({ ...form, materia: e.target.value })}
-      >
-        <option value="">Seleccione materia</option>
-        {materias.map((m) => (
-          <option key={m._id} value={m._id}>{m.nombre}</option>
-        ))}
-      </select>
-
-      <input
-        type="number"
-        placeholder="Calificación"
-        value={form.calificacion}
-        onChange={(e) => setForm({ ...form, calificacion: e.target.value })}
-      />
-
-      <button onClick={guardar}>
-        {modoEdicion ? "Actualizar" : "Guardar"}
-      </button>
-
-      <h3>Historial</h3>
-      {calificaciones.map((c) => (
-        <div key={c._id}>
-          {c.alumno?.nombre} - {c.materia?.nombre} = {c.calificacion}
-          <button onClick={() => editar(c)}>Editar</button>
-          <button onClick={() => borrar(c._id)}>Eliminar</button>
-        </div>
-      ))}
+      </div>
     </div>
   );
 }

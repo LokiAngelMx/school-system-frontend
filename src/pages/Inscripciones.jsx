@@ -7,6 +7,7 @@ import {
   updateInscripcion,
   deleteInscripcion
 } from "../services/api";
+import "../styles/inscripciones.css";
 
 function Inscripciones({ token }) {
   const [alumnos, setAlumnos] = useState([]);
@@ -37,7 +38,6 @@ function Inscripciones({ token }) {
       return;
     }
 
-    // Validar que no exista ya una inscripción igual (cuando NO estamos en modo edición)
     const yaInscrito = inscripciones.find(
       (i) => i.alumno?._id === alumno && i.materia?._id === materia
     );
@@ -95,49 +95,54 @@ function Inscripciones({ token }) {
   }, []);
 
   return (
-    <div>
+    <div className="inscripciones-container">
       <h2>Inscripciones</h2>
 
       {mensaje && (
-        <p style={{ color: mensaje.includes("⚠️") || mensaje.includes("❌") ? "red" : "green" }}>
+        <p className={mensaje.includes("❌") || mensaje.includes("⚠️") ? "error" : "success"}>
           {mensaje}
         </p>
       )}
 
-      <h3>{modoEdicion ? "Editar inscripción" : "Registrar inscripción"}</h3>
+      <div className="form-section">
+        <select
+          value={form.alumno}
+          onChange={(e) => setForm({ ...form, alumno: e.target.value })}
+        >
+          <option value="">Seleccione alumno</option>
+          {alumnos.map((a) => (
+            <option key={a._id} value={a._id}>{a.nombre}</option>
+          ))}
+        </select>
 
-      <select
-        value={form.alumno}
-        onChange={(e) => setForm({ ...form, alumno: e.target.value })}
-      >
-        <option value="">Seleccione alumno</option>
-        {alumnos.map((a) => (
-          <option key={a._id} value={a._id}>{a.nombre}</option>
+        <select
+          value={form.materia}
+          onChange={(e) => setForm({ ...form, materia: e.target.value })}
+        >
+          <option value="">Seleccione materia</option>
+          {materias.map((m) => (
+            <option key={m._id} value={m._id}>{m.nombre}</option>
+          ))}
+        </select>
+
+        <button onClick={guardarInscripcion}>
+          {modoEdicion ? "Actualizar" : "Guardar"}
+        </button>
+      </div>
+
+      <div className="lista-inscripciones">
+        {inscripciones.map((i) => (
+          <div key={i._id} className="inscripcion-card">
+            <div>
+              <p><strong>{i.alumno?.nombre}</strong> → {i.materia?.nombre}</p>
+            </div>
+            <div>
+              <button onClick={() => editarInscripcion(i)}>Editar</button>
+              <button onClick={() => borrarInscripcion(i._id)}>Eliminar</button>
+            </div>
+          </div>
         ))}
-      </select>
-
-      <select
-        value={form.materia}
-        onChange={(e) => setForm({ ...form, materia: e.target.value })}
-      >
-        <option value="">Seleccione materia</option>
-        {materias.map((m) => (
-          <option key={m._id} value={m._id}>{m.nombre}</option>
-        ))}
-      </select>
-
-      <button onClick={guardarInscripcion}>
-        {modoEdicion ? "Actualizar" : "Guardar"}
-      </button>
-
-      <h3>Historial</h3>
-      {inscripciones.map((i) => (
-        <div key={i._id}>
-          {i.alumno?.nombre} → {i.materia?.nombre}
-          <button onClick={() => editarInscripcion(i)}>Editar</button>
-          <button onClick={() => borrarInscripcion(i._id)}>Eliminar</button>
-        </div>
-      ))}
+      </div>
     </div>
   );
 }
