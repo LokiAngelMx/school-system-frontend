@@ -48,6 +48,6 @@ El token se guarda en `localStorage` y se usa automáticamente en cada solicitud
 ## ✨ Autores
 
 Desarrollado por
-**Angel García**
-**Daniel Moreno**
-**José Muñetón**
+- **Angel García**
+- **Daniel Moreno**
+- **José Muñetón**
