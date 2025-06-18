@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { login } from "../services/api";
+import API from "../services/api";
 
 function Login({ setToken }) {
   const [username, setUsername] = useState("");
@@ -9,8 +10,12 @@ function Login({ setToken }) {
     e.preventDefault();
     try {
       const res = await login({ username, password });
-      setToken(res.data.token);
-      localStorage.setItem("token", res.data.token);
+      const token = res.data.token;
+
+      setToken(token);
+      localStorage.setItem("token", token);
+      API.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
       alert("Login exitoso");
     } catch (err) {
       alert("Login incorrecto");

@@ -6,6 +6,7 @@ function Inscripciones({ token }) {
   const [materias, setMaterias] = useState([]);
   const [inscripciones, setInscripciones] = useState([]);
   const [form, setForm] = useState({ alumno: "", materia: "" });
+  const [mensaje, setMensaje] = useState("");
 
   const cargarDatos = async () => {
     const [a, m, i] = await Promise.all([
@@ -19,8 +20,18 @@ function Inscripciones({ token }) {
   };
 
   const inscribir = async () => {
-    await createInscripcion(form, token);
+    const { alumno, materia } = form;
+
+    if (!alumno || !materia) {
+      setMensaje("⚠️ Debes seleccionar un alumno y una materia");
+      setTimeout(() => setMensaje(""), 2000);
+      return;
+    }
+
+    await createInscripcion(form);
+    setMensaje("✅ Inscripción realizada");
     cargarDatos();
+    setTimeout(() => setMensaje(""), 2000);
   };
 
   useEffect(() => {
@@ -30,6 +41,7 @@ function Inscripciones({ token }) {
   return (
     <div>
       <h2>Inscripciones</h2>
+      <p style={{ color: mensaje.includes("⚠️") || mensaje.includes("❌") ? "red" : "green" }}>{mensaje}</p>
       <select onChange={(e) => setForm({ ...form, alumno: e.target.value })}>
         <option value="">Seleccione alumno</option>
         {alumnos.map(a => <option key={a._id} value={a._id}>{a.nombre}</option>)}
@@ -39,7 +51,6 @@ function Inscripciones({ token }) {
         {materias.map(m => <option key={m._id} value={m._id}>{m.nombre}</option>)}
       </select>
       <button onClick={inscribir}>Inscribir</button>
-
       <h3>Historial</h3>
       {inscripciones.map((i) => (
         <div key={i._id}>{i.alumno?.nombre} → {i.materia?.nombre}</div>
