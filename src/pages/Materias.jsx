@@ -1,9 +1,16 @@
 import React, { useEffect, useState } from "react";
-import { getMaterias, createMateria } from "../services/api";
+import {
+  getMaterias,
+  createMateria,
+  updateMateria,
+  deleteMateria
+} from "../services/api";
 
 function Materias({ token }) {
   const [materias, setMaterias] = useState([]);
   const [nueva, setNueva] = useState({ nombre: "", clave: "", profesor: "" });
+  const [modoEdicion, setModoEdicion] = useState(false);
+  const [idEditar, setIdEditar] = useState(null);
   const [mensaje, setMensaje] = useState("");
 
   const cargarMaterias = async () => {
@@ -11,7 +18,7 @@ function Materias({ token }) {
     setMaterias(res.data);
   };
 
-  const agregarMateria = async () => {
+  const guardarMateria = async () => {
     const { nombre, clave, profesor } = nueva;
 
     if (!nombre || !clave || !profesor) {
@@ -20,11 +27,43 @@ function Materias({ token }) {
       return;
     }
 
-    await createMateria(nueva);
-    setNueva({ nombre: "", clave: "", profesor: "" });
-    setMensaje("✅ Materia registrada");
-    cargarMaterias();
+    try {
+      if (modoEdicion) {
+        await updateMateria(idEditar, nueva);
+        setMensaje("✅ Materia actualizada");
+      } else {
+        await createMateria(nueva);
+        setMensaje("✅ Materia registrada");
+      }
+
+      setNueva({ nombre: "", clave: "", profesor: "" });
+      setModoEdicion(false);
+      setIdEditar(null);
+      cargarMaterias();
+    } catch (err) {
+      setMensaje("❌ Error al guardar materia");
+    }
+
     setTimeout(() => setMensaje(""), 2000);
+  };
+
+  const editarMateria = (materia) => {
+    setModoEdicion(true);
+    setIdEditar(materia._id);
+    setNueva({
+      nombre: materia.nombre,
+      clave: materia.clave,
+      profesor: materia.profesor
+    });
+  };
+
+  const borrarMateria = async (id) => {
+    if (confirm("¿Seguro que deseas eliminar esta materia?")) {
+      await deleteMateria(id);
+      setMensaje("✅ Materia eliminada");
+      cargarMaterias();
+      setTimeout(() => setMensaje(""), 2000);
+    }
   };
 
   useEffect(() => {
@@ -34,11 +73,22 @@ function Materias({ token }) {
   return (
     <div>
       <h2>Materias</h2>
+
+      {mensaje && (
+        <p style={{ color: mensaje.includes("⚠️") || mensaje.includes("❌") ? "red" : "green" }}>
+          {mensaje}
+        </p>
+      )}
+
       {materias.map((m) => (
-        <div key={m._id}>{m.nombre} - {m.clave}</div>
+        <div key={m._id}>
+          {m.nombre} - {m.clave}
+          <button onClick={() => editarMateria(m)}>Editar</button>
+          <button onClick={() => borrarMateria(m._id)}>Eliminar</button>
+        </div>
       ))}
-      <p style={{ color: mensaje.includes("⚠️") || mensaje.includes("❌") ? "red" : "green" }}>{mensaje}</p>
-      <h3>Agregar</h3>
+
+      <h3>{modoEdicion ? "Editar materia" : "Agregar materia"}</h3>
       <input
         placeholder="Nombre"
         value={nueva.nombre}
@@ -54,8 +104,9 @@ function Materias({ token }) {
         value={nueva.profesor}
         onChange={(e) => setNueva({ ...nueva, profesor: e.target.value })}
       />
-
-      <button onClick={agregarMateria}>Guardar</button>
+      <button onClick={guardarMateria}>
+        {modoEdicion ? "Actualizar" : "Guardar"}
+      </button>
     </div>
   );
 }
